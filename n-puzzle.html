@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+text {
+  font: 10px sans-serif;
+}
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+var height = 300;
+var width = 300;
+
+var rows = 3;
+var cols = 3;
+
+var color = d3.scale.category10()
+var tiles = [];
+
+for(var y = 0; y < rows; y++)
+    for(var x = 0; x < cols;x++)
+        tiles.push({x: x, y:y})
+
+d3.shuffle(tiles);
+
+var freeTile = tiles.pop();
+
+var nums = d3.range(0, rows*cols-1)
+tiles.forEach(function(d) {
+    d['tile'] = nums.pop();
+})
+
+var xScale = d3.scale.ordinal()
+    .domain(d3.range(0,cols))
+    .rangeBands([0, width], 0.1);
+
+var yScale = d3.scale.ordinal()
+    .domain(d3.range(0,rows))
+    .rangeBands([0, height], 0.1);
+
+var svg = d3.select("body").append("svg")
+    .attr({
+        width: width,
+        height: height
+    });
+
+var board = svg.selectAll("rect")
+    .data(tiles)
+    .enter()
+    .append("g")
+
+function updateBoard() {
+    board.transition()
+        .attr("transform", function(d){
+            return "translate(" + xScale(d.x) + "," + yScale(d.y) + ")"
+        })
+}
+
+updateBoard();
+
+var rect = board.append("rect")
+    .attr("width", xScale.rangeBand)
+    .attr("height", yScale.rangeBand)
+    .attr("fill", function(d) {
+        return color(d.tile)
+    })
+    .on("click", function(d) {
+        if(isValidMove(d)) {
+            var newFreeTile = {x: d.x, y: d.y};
+            d.x = freeTile.x
+            d.y = freeTile.y
+            freeTile = newFreeTile
+            updateBoard();
+        }
+    })
+
+function isValidMove(tile) {
+    var x = tile.x
+    var y = tile.y
+
+    var fx = freeTile.x
+    var fy = freeTile.y
+
+    if(x+1 == fx && y == fy)
+        return true
+    if(y+1 == fy && x == fx)
+        return true
+    if(x-1 == fx && y == fy)
+        return true
+    if(y-1 == fy && x == fx)
+        return true
+
+    return false
+}</script>

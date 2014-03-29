@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
-text {
-  font: 10px sans-serif;
-}
 </style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
@@ -48,6 +45,15 @@ var board = svg.selectAll("rect")
     .data(tiles)
     .enter()
     .append("g")
+    .on("click", function(d) {
+        if(isValidMove(d)) {
+            var newFreeTile = {x: d.x, y: d.y};
+            d.x = freeTile.x;
+            d.y = freeTile.y;
+            freeTile = newFreeTile;
+            updateBoard();
+        }
+    })
 
 function updateBoard() {
     board.transition()
@@ -62,33 +68,40 @@ var rect = board.append("rect")
     .attr("width", xScale.rangeBand)
     .attr("height", yScale.rangeBand)
     .attr("fill", function(d) {
-        return color(d.tile)
+        return color(d.tile);
     })
-    .on("click", function(d) {
-        if(isValidMove(d)) {
-            var newFreeTile = {x: d.x, y: d.y};
-            d.x = freeTile.x
-            d.y = freeTile.y
-            freeTile = newFreeTile
-            updateBoard();
-        }
+
+var text = board.append("text")
+    .attr("dy", ".3em")
+    .style("text-anchor", "middle")
+    .attr("x", xScale.rangeBand()/2)
+    .attr("y", yScale.rangeBand()/2)
+    .attr("font-size", function(d) {
+        var px = Math.round(Math.min(xScale.rangeBand(), yScale.rangeBand()));
+        return px*0.8;
     })
+    .text(function(d) {
+        return d.tile
+    });
+
+
 
 function isValidMove(tile) {
-    var x = tile.x
-    var y = tile.y
+    var x = tile.x;
+    var y = tile.y;
 
-    var fx = freeTile.x
-    var fy = freeTile.y
+    var fx = freeTile.x;
+    var fy = freeTile.y;
 
     if(x+1 == fx && y == fy)
-        return true
+        return true;
     if(y+1 == fy && x == fx)
-        return true
+        return true;
     if(x-1 == fx && y == fy)
-        return true
+        return true;
     if(y-1 == fy && x == fx)
-        return true
+        return true;
 
-    return false
-}</script>
+    return false;
+}
+</script>

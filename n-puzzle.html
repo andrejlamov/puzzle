@@ -11,6 +11,14 @@ var width = window.innerWidth;
 var rows = 3;
 var cols = 3;
 
+if (location.hash.length > 1) {
+	items = location.hash.slice(1).split(',')
+	if (items.length == 2) {
+		rows = parseInt(items[0]) || rows;
+		cols = parseInt(items[1]) || cols;
+	}
+}
+
 var color = d3.scale.category10()
 var tiles = [];
 

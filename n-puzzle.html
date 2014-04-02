@@ -46,11 +46,14 @@ var board = svg.selectAll("rect")
     .enter()
     .append("g")
     .on("click", function(d) {
-        if(isValidMove(d)) {
+        if(isValidMove(d, freeTile)) {
             var newFreeTile = {x: d.x, y: d.y};
             d.x = freeTile.x;
             d.y = freeTile.y;
             freeTile = newFreeTile;
+            updateBoard();
+        } else {
+            tryDoubleMove(d, freeTile);
             updateBoard();
         }
     })
@@ -86,12 +89,12 @@ var text = board.append("text")
 
 
 
-function isValidMove(tile) {
+function isValidMove(tile, free) {
     var x = tile.x;
     var y = tile.y;
 
-    var fx = freeTile.x;
-    var fy = freeTile.y;
+    var fx = free.x;
+    var fy = free.y;
 
     if(x+1 == fx && y == fy)
         return true;
@@ -103,5 +106,36 @@ function isValidMove(tile) {
         return true;
 
     return false;
+}
+
+function tryDoubleMove(tile, free) {
+    var coord0 = null;
+    var coord1 = null;
+    var modcoord = null;
+
+    if(tile.y  == free.y) {
+        coord0 = function(d) { return d.y};
+        coord1 = function(d) { return d.x};
+        modcoord = function(d, p) { d.x = p};
+    } else  if(tile.x  == free.x) {
+        coord0 = function(d) { return d.x};
+        coord1 = function(d) { return d.y};
+        modcoord = function(d, p) { d.y = p};
+    }
+
+    if(coord0) {
+        var toMove = tiles.filter(function(t) { return coord0(t) == coord0(free) })
+        var posOffset = 0;
+        if(coord1(free) == 0) {
+            posOffset = -1;
+            modcoord(free, 2);
+        } else if(coord1(free) == 2) {
+            posOffset = 1;
+            modcoord(free,0);
+        }
+        toMove.forEach(function(t) {
+            modcoord(t, coord1(t) + posOffset);
+        })
+    }
 }
 </script>

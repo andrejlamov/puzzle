@@ -22,7 +22,7 @@ d3.shuffle(tiles);
 
 var freeTile = tiles.pop();
 
-var nums = d3.range(0, rows*cols-1)
+var nums = d3.range(1, rows*cols)
 tiles.forEach(function(d) {
     d['tile'] = nums.pop();
 })

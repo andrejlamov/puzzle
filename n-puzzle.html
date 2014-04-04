@@ -39,15 +39,39 @@ tiles.forEach(function(d,i) {
     d['tile'] = nums[i];
 })
 
-var initState = {tiles: tiles, free: freeTile}
+var initState = {tiles: tiles, free: freeTile};
 
-for(var i = 0; i < 1000; i++){
-    var validMoves = getValidMoves(initState.tiles, initState.free);
-    var valid = validMoves[Math.floor(Math.random() * validMoves.length)];
-    initState = nextState(initState.tiles, initState.free, valid);
+function shuffle() {
+
+    var shuffleCommands = [];
+    for(var i = 0; i < 100; i++){
+        var validMoves = getValidMoves(initState.tiles, initState.free);
+        var noRegret = validMoves.filter(function(m){
+            if(shuffleCommands.length > 1)
+                return m.tile != shuffleCommands[shuffleCommands.length-1].tile
+            else
+                return true
+        })
+        var move = noRegret[Math.floor(Math.random() * noRegret.length)];
+        shuffleCommands.push(move)
+        initState = nextState(initState.tiles, initState.free, move);
+    }
+
+    shuffleCommands.forEach(function(m, i){
+        var newFreeTile = {x: m.x, y: m.y};
+        d = tiles.filter(function(e) {
+            return e.tile == m.tile
+        })[0]
+        d.x = freeTile.x;
+        d.y = freeTile.y;
+        freeTile = newFreeTile;
+    })
+    board.transition().duration(500).ease("elastic")
+        .attr("transform", function(d){
+            return "translate(" + xScale(d.x) + "," + yScale(d.y) + ")"
+        })
 }
-tiles = initState.tiles;
-freeTile = initState.free;
+
 
 var xScale = d3.scale.ordinal()
     .domain(d3.range(0,cols))

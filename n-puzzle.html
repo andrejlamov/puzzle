@@ -4,6 +4,7 @@
 </style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="./heap.js/lib/heap.js"></script>
 <script>
 var height = window.innerHeight;
 var width = window.innerWidth;
@@ -26,14 +27,27 @@ for(var y = 0; y < rows; y++)
     for(var x = 0; x < cols;x++)
         tiles.push({x: x, y:y})
 
-d3.shuffle(tiles);
+var goalState = {};
+tiles.slice(0,rows*cols-1).forEach(function(t,i) {
+    goalState[i+1] = {x:t.x, y:t.y}
+});
 
 var freeTile = tiles.pop();
+var nums = d3.range(1, rows*cols);
 
-var nums = d3.range(1, rows*cols)
-tiles.forEach(function(d) {
-    d['tile'] = nums.pop();
+tiles.forEach(function(d,i) {
+    d['tile'] = nums[i];
 })
+
+var initState = {tiles: tiles, free: freeTile}
+
+for(var i = 0; i < 1000; i++){
+    var validMoves = getValidMoves(initState.tiles, initState.free);
+    var valid = validMoves[Math.floor(Math.random() * validMoves.length)];
+    initState = nextState(initState.tiles, initState.free, valid);
+}
+tiles = initState.tiles;
+freeTile = initState.free;
 
 var xScale = d3.scale.ordinal()
     .domain(d3.range(0,cols))
@@ -61,8 +75,8 @@ var board = svg.selectAll("rect")
             freeTile = newFreeTile;
             updateBoard();
         } else {
-            tryDoubleMove(d, freeTile);
-            updateBoard();
+             tryDoubleMove(d, freeTile);
+             updateBoard();
         }
     })
 
@@ -94,8 +108,6 @@ var text = board.append("text")
     .text(function(d) {
         return d.tile
     });
-
-
 
 function isValidMove(tile, free) {
     var x = tile.x;
@@ -145,5 +157,95 @@ function tryDoubleMove(tile, free) {
             modcoord(t, coord1(t) + posOffset);
         })
     }
+}
+
+function solve() {
+    console.log('Thinking...')
+    var moves = search(initState)
+    animateMoves(moves)
+    return true
+}
+
+function manhattanDistances(tiles, goalState) {
+    return tiles.reduce(function(acc,t){
+        return acc
+            + Math.abs(t.x - goalState[t.tile].x)
+            + Math.abs(t.y - goalState[t.tile].y)
+    }, 0)
+}
+
+function nextState(tiles, free, move) {
+    newTiles = tiles.map(function(t) {
+        tile = {x: t.x, y:t.y, tile: t.tile};
+        if(t.tile == move.tile) {
+            tile.x = free.x;
+            tile.y = free.y;
+        }
+        return tile
+    })
+    var newFree = {x: move.x, y: move.y}
+
+    return {tiles: newTiles, free: newFree}
+}
+
+function getValidMoves(tiles, free) {
+    return tiles.filter(function(t) {
+        return isValidMove(t, free)
+    })
+}
+
+function getState(moves) {
+    return moves.reduce(function(acc, move) {
+        return nextState(acc.tiles, acc.free, move)
+    }, {tiles: tiles, free: freeTile});
+}
+
+function search(startState) {
+    var frontier = new Heap(function(a,b) {
+        var state0 = getState(a)
+        var state1 = getState(b)
+        var p0 = manhattanDistances(state0.tiles, goalState) + a.length;
+        var p1 = manhattanDistances(state1.tiles, goalState) + b.length;
+        return p0 - p1
+    })
+    var visited = {}
+    frontier.push([])
+    while(frontier.length != 0) {
+        var moves = frontier.pop()
+        var hs = JSON.stringify(moves)
+        if(!(hs in visited)) {
+            var state = getState(moves);
+            if(manhattanDistances(state.tiles, goalState) == 0){
+                return moves;
+            }
+            visited[hs] = true
+            getValidMoves(state.tiles, state.free).forEach(function(t) {
+                var ms = moves.concat([t]);
+                var ml = ms.length;
+                if(ml > 2){
+                    if(!(ms[ml-1].x == ms[ml-3].x && ms[ml-1].y == ms[ml-3].y))
+                        frontier.push(ms)
+                } else
+                    frontier.push(ms)
+            })
+        }
+    }
+}
+
+function animateMoves(moves) {
+    moves.forEach(function(m, i){
+        var newFreeTile = {x: m.x, y: m.y};
+        d = tiles.filter(function(e) {
+            return e.tile == m.tile
+        })[0]
+
+        d.x = freeTile.x;
+        d.y = freeTile.y;
+        freeTile = newFreeTile;
+        board.transition().delay(i*200)
+            .attr("transform", function(d){
+                return "translate(" + xScale(d.x) + "," + yScale(d.y) + ")"
+            })
+    })
 }
 </script>

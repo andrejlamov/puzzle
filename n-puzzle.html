@@ -244,13 +244,15 @@ function search(startState) {
             }
             visited[hs] = true
             getValidMoves(state.tiles, state.free).forEach(function(t) {
-                var ms = moves.concat([t]);
-                var ml = ms.length;
-                if(ml > 2){
-                    if(!(ms[ml-1].x == ms[ml-3].x && ms[ml-1].y == ms[ml-3].y))
+                if(moves.length > 1) {
+                    if(moves[moves.length-1].tile != t.tile){
+                        var ms = moves.concat([t]);
                         frontier.push(ms)
-                } else
+                    }
+                } else {
+                    var ms = moves.concat([t]);
                     frontier.push(ms)
+                }
             })
         }
     }

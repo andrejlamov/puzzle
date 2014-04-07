@@ -236,11 +236,11 @@ function search(startState) {
     frontier.push([])
     while(frontier.length != 0) {
         var moves = frontier.pop()
-        var hs = JSON.stringify(moves)
+        var state = getState(moves);
+        var hs = JSON.stringify(state)
         if(!(hs in visited)) {
-            var state = getState(moves);
-            if(manhattanDistances(state.tiles, goalState) == 0){
-                return moves;
+             if(manhattanDistances(state.tiles, goalState) == 0){
+                 return moves;
             }
             visited[hs] = true
             getValidMoves(state.tiles, state.free).forEach(function(t) {

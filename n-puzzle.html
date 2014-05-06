@@ -3,6 +3,11 @@
 <style>
 </style>
 <body>
+    <div align="center">
+      <button type="button" onclick="shuffle()">Shuffle!</button>
+      <button type="button" onclick="solve()">Solve!</button>
+    </div>
+    <div id="board"></div>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="./heap.js/lib/heap.js"></script>
 <script>
@@ -81,7 +86,7 @@ var yScale = d3.scale.ordinal()
     .domain(d3.range(0,rows))
     .rangeBands([0, height], 0.1);
 
-var svg = d3.select("body").append("svg")
+var svg = d3.select("#board").append("svg")
     .attr({
         width: width,
         height: height

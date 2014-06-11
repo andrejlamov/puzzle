@@ -2,7 +2,7 @@ var http = require('http'),
     static = require('node-static');
 
 var fileServer = new static.Server(__dirname + '/www');
-var port = process.argv[2];
+var port = process.argv[2] || 1337;
 
 http.createServer(function(req, resp) {
   fileServer.serve(req, resp, function(err, res) {

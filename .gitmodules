@@ -1,3 +1,0 @@
-[submodule "heap.js"]
-	path = heap.js
-	url = git@github.com:qiao/heap.js.git

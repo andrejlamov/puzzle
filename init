@@ -1,0 +1,6 @@
+#!/bin/sh
+
+npm install
+mkdir -p www/js
+wget http://d3js.org/d3.v3.min.js -O www/js/d3.v3.min.js
+wget https://raw.githubusercontent.com/qiao/heap.js/master/lib/heap.js -O www/js/heap.js
